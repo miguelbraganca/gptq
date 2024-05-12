@@ -28,6 +28,7 @@ class GPTQ:
         self.columns = W.shape[1]
         self.H = torch.zeros((self.columns, self.columns), device=self.dev)
         self.nsamples = 0
+        self.counter = 0
 
     def add_batch(self, inp, out):
         if DEBUG:
@@ -61,7 +62,7 @@ class GPTQ:
         self, blocksize=128, percdamp=.01, groupsize=-1, actorder=False, static_groups=False
     ):
         W = self.layer.weight.data.clone()
-        torch.save(W, 'W.pt')
+        torch.save(W, f'W_{self.counter}.pt')
         
         if isinstance(self.layer, nn.Conv2d):
             W = W.flatten(1)
@@ -75,7 +76,7 @@ class GPTQ:
             self.quantizer.find_params(W, weight=True)
 
         H = self.H
-        torch.save(H, 'H.pt')
+        torch.save(H, f'H_{self.counter}.pt')
 
         del self.H
         dead = torch.diag(H) == 0
@@ -164,7 +165,7 @@ class GPTQ:
         self.layer.weight.data = Q.reshape(self.layer.weight.shape).to(self.layer.weight.data.dtype)
         if DEBUG:
             print(torch.sum((self.layer(self.inp1) - self.out1) ** 2))
-        torch.save(self.layer.weight.data, 'finalW.pt')
+        torch.save(self.layer.weight.data, f'finalW_{self.counter}.pt')
 
     def free(self):
         if DEBUG:
