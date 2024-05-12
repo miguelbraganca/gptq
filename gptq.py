@@ -166,6 +166,7 @@ class GPTQ:
         if DEBUG:
             print(torch.sum((self.layer(self.inp1) - self.out1) ** 2))
         torch.save(self.layer.weight.data, f'finalW_{self.counter}.pt')
+        self.counter += 1
 
     def free(self):
         if DEBUG:
